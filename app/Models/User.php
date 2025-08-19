@@ -47,4 +47,9 @@ class User extends Authenticatable
             'role' => 'integer'
         ];
     }
+
+    public function isAdmin()
+    {
+        return $this->role == 1;
+    }
 }
