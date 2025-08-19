@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StatController;
 use App\Http\Controllers\TariffController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Http\Request;
@@ -29,4 +30,11 @@ Route::controller(TicketController::class)
         Route::post('/', 'store');
         Route::put('/{ticket}', 'update');
         Route::delete('/{ticket}', 'destroy');
+    });
+
+Route::controller(StatController::class)
+    ->prefix('stats')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('/daily', 'getDailyStats');
     });
