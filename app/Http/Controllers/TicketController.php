@@ -13,7 +13,18 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Ticket::class);
-        return Ticket::paginate($request->page_size);
+
+        $query = Ticket::query();
+
+        $request->whenFilled('search', function ($search) use ($query) {
+            $query->where('folio', $search);
+        });
+
+        $request->whenFilled('filter.date', function ($date) use ($query) {
+            $query->whereDate('exit_time', $date);
+        });
+
+        return $query->paginate($request->page_size);
     }
 
     /**
@@ -24,7 +35,7 @@ class TicketController extends Controller
         $this->authorize('create', Ticket::class);
 
         $payload = $request->validate([
-            'code' => 'required|string',//|unique:tickets,code',
+            'code' => 'required|string', //|unique:tickets,code',
             'entry_time' => 'required|date',
             'exit_time' => 'nullable|date',
             'duration' => 'nullable|integer',
@@ -53,7 +64,7 @@ class TicketController extends Controller
         $this->authorize('update', $ticket);
 
         $payload = $request->validate([
-            'code' => 'sometimes|string',//|unique:tickets,code,' . $ticket->id,
+            'code' => 'sometimes|string', //|unique:tickets,code,' . $ticket->id,
             'entry_time' => 'sometimes|date',
             'exit_time' => 'nullable|date',
             'duration' => 'nullable|integer',
