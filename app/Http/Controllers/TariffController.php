@@ -24,8 +24,8 @@ class TariffController extends Controller
         $this->authorize('create', Tariff::class);
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'amount' => 'required|positive|numeric',
-            'threshold' => 'required|positive|numeric|integer',
+            'amount' => 'required|min:1|numeric',
+            'threshold' => 'required|min:0|numeric|integer',
         ]);
         $tariff = Tariff::create($validatedData);
 
@@ -49,8 +49,8 @@ class TariffController extends Controller
         $this->authorize('update', $tariff);
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'amount' => 'sometimes|required|positive|numeric',
-            'threshold' => 'sometimes|required|positive|numeric|integer',
+            'amount' => 'sometimes|required|min:1|numeric',
+            'threshold' => 'sometimes|required|min:0|numeric|integer',
         ]);
         $tariff->update($validatedData);
 

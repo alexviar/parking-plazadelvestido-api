@@ -13,4 +13,8 @@ Route::controller(TariffController::class)
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::get('/', 'index')->withoutMiddleware('auth:sanctum');
+        Route::get('/{tariff}', 'show')->withoutMiddleware('auth:sanctum');
+        Route::post('/', 'store');
+        Route::put('/{tariff}', 'update');
+        Route::delete('/{tariff}', 'destroy');
     });

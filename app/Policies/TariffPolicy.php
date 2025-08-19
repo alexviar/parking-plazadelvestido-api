@@ -29,7 +29,7 @@ class TariffPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->role === 1;
     }
 
     /**
@@ -37,7 +37,7 @@ class TariffPolicy
      */
     public function update(User $user, Tariff $tariff): bool
     {
-        return false;
+        return $user->role === 1;
     }
 
     /**
@@ -45,7 +45,7 @@ class TariffPolicy
      */
     public function delete(User $user, Tariff $tariff): bool
     {
-        return false;
+        return $user->role === 1;
     }
 
     /**

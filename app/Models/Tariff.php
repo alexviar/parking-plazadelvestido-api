@@ -15,4 +15,17 @@ class Tariff extends Model
         'amount',
         'threshold',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'float',
+            'threshold' => 'integer',
+        ];
+    }
 }
