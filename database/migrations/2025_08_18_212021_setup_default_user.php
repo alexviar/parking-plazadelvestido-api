@@ -14,9 +14,9 @@ return new class extends Migration
     {
         if (!app()->environment('testing')) {
             User::create([
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'password' => 'password'
+                'name' => config('defaults.user.name'),
+                'email' => config('defaults.user.email'),
+                'password' => config('defaults.user.password')
             ]);
         }
     }
