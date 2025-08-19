@@ -35,12 +35,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        /** @var User $user */
-        $user = Auth::user();
-        /** @var PersonalAccessToken $currentAccessToken */
-        $currentAccessToken = $user->currentAccessToken();
+        Auth::logout();
 
-        $currentAccessToken->delete();
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
     }
 
     public function changePassword(Request $request)
