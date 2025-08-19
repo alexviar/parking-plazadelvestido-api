@@ -16,7 +16,8 @@ return new class extends Migration
             User::create([
                 'name' => config('defaults.user.name'),
                 'email' => config('defaults.user.email'),
-                'password' => config('defaults.user.password')
+                'password' => config('defaults.user.password'),
+                'role' => 1
             ]);
         }
     }
