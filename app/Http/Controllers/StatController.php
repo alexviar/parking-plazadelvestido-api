@@ -23,7 +23,7 @@ class StatController extends Controller
             'date' => $date,
             'total_tickets' => $count,
             'total_amount' => $amount,
-            'gaps' => $closing?->gaps
+            'gaps' => $closing?->gaps ?? []
         ]);
     }
 }
