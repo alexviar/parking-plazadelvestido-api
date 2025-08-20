@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashClosing;
 use App\Models\Stat;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
@@ -16,10 +17,13 @@ class StatController extends Controller
         $count = Ticket::whereDate('exit_time', $date)->count();
         $amount = Ticket::whereDate('exit_time', $date)->sum('amount');
 
+        $closing = CashClosing::whereDate('period_start', $date)->first();
+
         return response()->json([
             'date' => $date,
             'total_tickets' => $count,
             'total_amount' => $amount,
+            'gaps' => $closing?->gaps
         ]);
     }
 }
