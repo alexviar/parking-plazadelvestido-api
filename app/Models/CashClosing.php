@@ -56,6 +56,8 @@ class CashClosing extends Model
 
 
         logger('Hola', [
+            $periodStart->toDateTimeLocalString(),
+            $periodEnd->toDateTimeLocalString(),
             $totalTickets,
             $totalAmount,
             $minCode,
