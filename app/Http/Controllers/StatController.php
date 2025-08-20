@@ -17,7 +17,7 @@ class StatController extends Controller
         $count = Ticket::whereDate('exit_time', $date)->count();
         $amount = Ticket::whereDate('exit_time', $date)->sum('amount');
 
-        $closing = CashClosing::whereDate('period_start', $date)->first();
+        $closing = CashClosing::whereDate('period_end', $date)->first();
 
         return response()->json([
             'date' => $date,
