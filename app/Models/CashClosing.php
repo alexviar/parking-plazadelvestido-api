@@ -34,7 +34,7 @@ class CashClosing extends Model
 
     static function createDaily()
     {
-        $date = today();
+        $date = now()->startOfHour();
         $periodEnd = $date->copy();
         $periodStart = $date->copy()->subDay();
 
