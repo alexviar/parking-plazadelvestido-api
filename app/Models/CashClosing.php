@@ -64,13 +64,17 @@ class CashClosing extends Model
             $maxCode,
             $lastScannedCode
         ]);
-        $previousFolio = $lastScannedCode ? (int) Str::substr($lastScannedCode, -4) : ($minCode - 1);
+        $previousFolio = (int) Str::substr($lastScannedCode ? $lastScannedCode : $minCode, -4);
+        if (!$lastScannedCode) {
+            $previousFolio -= 1;
+        }
 
         if ($totalTickets > 0) {
             $gaps = [];
+            $expectedFolio = $previousFolio;
             (clone $ticketsQuery)
                 ->orderBy("code")
-                ->chunk(100, function ($chunks) use (&$gaps, $previousFolio) {
+                ->chunk(100, function ($chunks) use (&$gaps, $expectedFolio) {
                     $lastIncludedCode = '';
                     foreach ($chunks as $ticket) {
                         if ($ticket->code == $lastIncludedCode) {
@@ -78,13 +82,12 @@ class CashClosing extends Model
                         }
                         $lastIncludedCode = $ticket->code;
                         $folio = $ticket->folio;
-                        logger($ticket->id, [$ticket->code]);
 
                         $mod = 10000;
-                        $expectedFolio = ($previousFolio + 1) % $mod;
+                        $expectedFolio = ($expectedFolio + 1) % $mod;
                         while ($expectedFolio != $folio) {
                             $gaps[] = $expectedFolio;
-                            $expectedFolio = ($previousFolio + 1) % $mod;
+                            $expectedFolio = ($expectedFolio + 1) % $mod;
                         }
                     }
                 });
