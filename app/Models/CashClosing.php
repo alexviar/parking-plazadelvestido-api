@@ -64,14 +64,13 @@ class CashClosing extends Model
             $maxCode,
             $lastScannedCode
         ]);
+        $previousFolio = $lastScannedCode ? (int) Str::substr($lastScannedCode, -4) : ($minCode - 1);
+
         if ($totalTickets > 0) {
-            $gaps = collect([[
-                'from' => (int) Str::substr($minCode, -4),
-                'to' => (int) Str::substr($maxCode, -4),
-            ]]);
+            $gaps = [];
             (clone $ticketsQuery)
                 ->orderBy("code")
-                ->chunk(100, function ($chunks) use (&$gaps) {
+                ->chunk(100, function ($chunks) use (&$gaps, $previousFolio) {
                     $lastIncludedCode = '';
                     foreach ($chunks as $ticket) {
                         if ($ticket->code == $lastIncludedCode) {
@@ -82,34 +81,13 @@ class CashClosing extends Model
                         logger($ticket->id, [$ticket->code]);
 
                         $mod = 10000;
-                        $gap = $gaps->pop();
-
-                        if ($gap['from'] != $folio) {
-                            $gaps->push([
-                                'from' => $gap['from'],
-                                'to' => (($folio - 1) % $mod + $mod) % $mod
-                            ]);
-                        }
-                        if ($gap['to'] != $folio) {
-                            $gaps->push([
-                                'from' => ($folio + 1) % $mod,
-                                'to' => $gap['to']
-                            ]);
+                        $expectedFolio = ($previousFolio + 1) % $mod;
+                        while ($expectedFolio != $folio) {
+                            $gaps[] = $expectedFolio;
+                            $expectedFolio = ($previousFolio + 1) % $mod;
                         }
                     }
                 });
-
-            if ($lastScannedCode) {
-                $previousFolio = (int) Str::substr($lastScannedCode, -4);
-                $expectedFolio = ($previousFolio + 1) % 10000;
-                $currentFolio = (int) Str::substr($minCode, -4);
-                if ($expectedFolio != $minCode) {
-                    $gaps = $gaps->splice(0, 0, [
-                        'from' => $expectedFolio,
-                        'to' => $currentFolio
-                    ]);
-                }
-            }
         } else {
             $gaps = [];
             $minCode = null;
