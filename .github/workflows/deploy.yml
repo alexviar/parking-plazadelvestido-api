@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   deploy:
@@ -17,8 +18,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.FTP_USER || secrets.FTP_DEV_USER }}
+          password: ${{ github.ref == 'refs/heads/main' && secrets.FTP_PASS || secrets.FTP_DEV_PASS }}
           protocol: ftp
           port: 21
           local-dir: ./
@@ -69,8 +70,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.FTP_USER || secrets.FTP_DEV_USER }}
+          password: ${{ github.ref == 'refs/heads/main' && secrets.FTP_PASS || secrets.FTP_DEV_PASS }}
           protocol: ftp
           port: 21
           local-dir: ./
@@ -99,8 +100,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.FTP_USER || secrets.FTP_DEV_USER }}
+          password: ${{ github.ref == 'refs/heads/main' && secrets.FTP_PASS || secrets.FTP_DEV_PASS }}
           protocol: ftp
           port: 21
           local-dir: ./public/
@@ -113,4 +114,4 @@ jobs:
         run: |
           curl -fsS \
             -H "User-Agent: GitHub Actions" \
-            "${{ secrets.DEPLOY_URL }}/post-deploy.php?token=${{ steps.generate-post-deploy.outputs.token }}"
+            "${{ github.ref == 'refs/heads/main' && secrets.DEPLOY_URL || secrets.DEPLOY_DEV_URL }}/post-deploy.php?token=${{ steps.generate-post-deploy.outputs.token }}"
