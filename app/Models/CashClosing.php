@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CashClosing extends Model
@@ -34,16 +35,11 @@ class CashClosing extends Model
 
     static function createDaily()
     {
-        $date = now()->startOfMinute();
-        $periodEnd = $date->copy();
-        $periodStart = $date->copy()->subDay();
-
         $ticketConfig = TicketConfig::first();
         $lastScannedCode = $ticketConfig->last_scanned_code;
 
         $ticketsQuery = Ticket::query()
-            ->where('exit_time', '>=', $periodStart)
-            ->where('exit_time', '<',  $periodEnd);
+            ->where('code', '>', $lastScannedCode);
 
         $totals = (clone $ticketsQuery)
             ->selectRaw('COUNT(*) as c, COALESCE(SUM(amount), 0) as s')
@@ -56,8 +52,6 @@ class CashClosing extends Model
 
 
         logger('Hola', [
-            $periodStart->toDateTimeLocalString(),
-            $periodEnd->toDateTimeLocalString(),
             $totalTickets,
             $totalAmount,
             $minCode,
@@ -74,10 +68,10 @@ class CashClosing extends Model
             $expectedFolio = $previousFolio;
             (clone $ticketsQuery)
                 ->orderBy("code")
-                ->chunk(100, function ($chunks) use (&$gaps, $expectedFolio) {
-                    $lastIncludedCode = '';
+                ->chunk(100, function ($chunks) use (&$gaps, &$expectedFolio, &$lastIncludedCode) {
                     foreach ($chunks as $ticket) {
                         if ($ticket->code == $lastIncludedCode) {
+                            logger("Duplicado", [$ticket->code]);
                             continue;
                         }
                         $lastIncludedCode = $ticket->code;
@@ -89,6 +83,7 @@ class CashClosing extends Model
                             $gaps[] = $expectedFolio;
                             $expectedFolio = ($expectedFolio + 1) % $mod;
                         }
+                        logger("Gaps", $gaps);
                     }
                 });
         } else {
@@ -97,18 +92,20 @@ class CashClosing extends Model
             $maxCode  = null;
         }
 
-        $ticketConfig?->update([
-            'last_scanned_code' => $maxCode
-        ]);
+        DB::transaction(function () use ($ticketConfig, $maxCode, $totalTickets, $totalAmount, $gaps, $minCode) {
+            $ticketConfig?->update([
+                'last_scanned_code' => $maxCode
+            ]);
 
-        return static::create([
-            'period_start'     => $periodStart,
-            'period_end'       => $periodEnd,
-            'total_tickets'    => $totalTickets,
-            'total_amount'     => $totalAmount,
-            'gaps'             => $gaps,
-            'first'            => $minCode,
-            'last'             => $maxCode,
-        ]);
+            return static::create([
+                'period_start'     => now(),
+                'period_end'       => now(),
+                'total_tickets'    => $totalTickets,
+                'total_amount'     => $totalAmount,
+                'gaps'             => $gaps,
+                'first'            => $minCode,
+                'last'             => $maxCode,
+            ]);
+        });
     }
 }
