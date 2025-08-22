@@ -13,7 +13,7 @@ class TariffController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Tariff::class);
-        return Tariff::paginate($request->page_size);
+        return Tariff::orderBy('threshold', 'asc')->paginate($request->page_size);
     }
 
     /**
